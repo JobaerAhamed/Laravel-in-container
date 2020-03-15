@@ -1,0 +1,43 @@
+version: '3.5'
+
+services:
+  laravel-app:
+    build:
+      context: '.'
+      args:
+        uid: ${UID}
+    container_name: laravel-app
+    environment:
+      - APACHE_RUN_USER=#${UID}
+      - APACHE_RUN_GROUP=#${UID}
+    volumes:
+      - .:/var/www/html
+    ports:
+      - ${HOST_PORT}:80
+    networks:
+      - laravel-network
+
+  mysql-db:
+    image: mysql:5.6
+    container_name: mysql-db
+    environment:
+      - MYSQL_ROOT_PASSWORD=root_pass
+      - MYSQL_PORT=3306
+      - MYSQL_DATABASE=laravel
+      - MYSQL_USER=user
+      - MYSQL_PASSWORD=pass
+    networks:
+      - laravel-network
+    volumes:
+      - "./data:/docker-entrypoint-initdb.d"
+      - "db:/var/lib/mysql"
+    ports:
+      - "3306:3306"
+
+networks:
+  laravel-network:
+    external: true
+volumes:
+  db:
+    driver:
+      local
