@@ -4,36 +4,40 @@
 
 Target is to run laravel as Docker container with other services such as mysql, redis, aws* etc. Should be able to manage the services with docker-compose. 
 
-With that said, To start this repo for the first time:
+### > With that said, To start this repo for the first time:
 ```
-$ make build-init
+$ make build-new
 ```
-For every other regular starts:
+- Once the build finishes, On a new terminal tab at the same dir run
+```
+$ make build-setup
+```
+
+### > For every other regular starts:
 
 ```
 $ make
 ```
 
-
-To run composer or artisan commands:
-- Start the project first. On a new terminal/tab run:
+### > To run composer or artisan commands:
+- Start the project first. On a new terminal/tab run at the same dir, run:
 
 ```
 $ make composer c=<your_command>
 ```
 
-example: 
+- example: 
 ```
 $ make composer c=about
 $ make php-artisan c=about
 ```
 
-To get to the container project
+- To get to the container shell
 ```
 $ make container
 ```
 
-To get to the container mysql shell
+- To get to the container mysql shell
 ```
 $ make db
 ```

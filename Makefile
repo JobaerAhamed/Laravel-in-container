@@ -7,10 +7,6 @@ build:
 	docker-compose build
 	docker-compose up
 
-build-init:
-	make build-new
-	gnome-terminal --tab -- /bin/bash -c "make build-setup; bash"
-
 build-new:
 	docker network create laravel-network
 	docker-compose build --no-cache
