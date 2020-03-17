@@ -22,10 +22,10 @@ services:
     container_name: mysql-db
     environment:
       - MYSQL_ROOT_PASSWORD=root_pass
-      - MYSQL_PORT=3306
-      - MYSQL_DATABASE=laravel
-      - MYSQL_USER=user
-      - MYSQL_PASSWORD=pass
+      - MYSQL_PORT=${DB_PORT}
+      - MYSQL_DATABASE=${DB_DATABASE}
+      - MYSQL_USER=${DB_USERNAME}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
     networks:
       - laravel-network
     volumes:

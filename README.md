@@ -44,6 +44,8 @@ $ make db
 
 - You can add your custom commands, follow the makefile, then ./scripts files
 
+#### To visit the site go to [http://127.0.0.1:8080]
+
 [Iamreallynotabigfanofphpandlaravelin2020.justcurioustoknowmoreaboutthisframework]
 
 ## About Laravel
