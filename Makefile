@@ -16,6 +16,7 @@ build-new:
 
 build-setup:
 	make enable-sh
+	npm install -E
 	make composer c=install
 	make php-artisan c=key:generate
 	make php-artisan c=migrate
