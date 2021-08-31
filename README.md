@@ -40,10 +40,13 @@ $ make php-artisan c=about
 ```
 
 ### > To run any common command on the laravel app
+
 ```
 make exec command="any command"
 ```
-- example
+
+-   example
+
 ```
 make exec command="php artisan --version"
 ```
