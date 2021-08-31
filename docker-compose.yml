@@ -1,60 +1,86 @@
-version: '3.5'
+version: "3.5"
 networks:
-  laravel-network:
-    driver: bridge
+    laravel-network:
+        driver: bridge
 volumes:
-  db:
-    driver:
-      local
+    db:
+        driver: local
+    db-replica:
+        driver: local
 
 services:
-  mysql-db:
-    image: mysql:5.7.34
-    command: |
-      mysqld --sql-mode=NO_ENGINE_SUBSTITUTION --innodb-buffer-pool-size=2147483648 --innodb-flush-method=O_DIRECT --innodb-flush-log-at-trx-commit=2
-      --default-authentication-plugin=mysql_native_password --max_connections=1000 --explicit-defaults-for-timestamp=ON
-    container_name: mysql-db
-    environment:
-      - MYSQL_ROOT_PASSWORD=root_pass
-      - MYSQL_PORT=${DB_PORT}
-      - MYSQL_DATABASE=${DB_DATABASE}
-      - MYSQL_USER=${DB_USERNAME}
-      - MYSQL_PASSWORD=${DB_PASSWORD}
-    networks:
-      - laravel-network
-    volumes:
-      - "./data:/docker-entrypoint-initdb.d"
-      - "db:/var/lib/mysql"
-    ports:
-      - "3306:3306"
+    mysql-db:
+        image: mysql:5.7.34
+        container_name: mysql-db
+        command: |
+            mysqld --sql-mode=NO_ENGINE_SUBSTITUTION --innodb-buffer-pool-size=2147483648 --innodb-flush-method=O_DIRECT --innodb-flush-log-at-trx-commit=2
+            --default-authentication-plugin=mysql_native_password --max_connections=1000 --explicit-defaults-for-timestamp=ON
+        environment:
+            - MYSQL_PORT=${DB_PORT}
+            - MYSQL_DATABASE=${DB_DATABASE}
+            - MYSQL_USER=${DB_USERNAME}
+            - MYSQL_PASSWORD=${DB_PASSWORD}
+            - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+        networks:
+            - laravel-network
+        volumes:
+            - "./data:/docker-entrypoint-initdb.d"
+            - "./data/master/my.cnf:/etc/mysql/my.cnf"
+            - "db:/var/lib/mysql"
+        ports:
+            - "3306:3306"
 
-  web-proxy:
-    image: nginx:alpine
-    container_name: web-proxy
-    depends_on:
-      - laravel-app
-    links:
-      - laravel-app
-    volumes:
-      - ./:/var/www
-      - ./nginx/conf.d/:/etc/nginx/conf.d/
-    networks:
-      - laravel-network
-    ports:
-      - "8000:80"
+    mysql-replica:
+        image: mysql:5.7.34
+        container_name: mysql-replica
+        links:
+            - mysql-db
+        depends_on:
+            - mysql-db
+        command: |
+            mysqld --sql-mode=NO_ENGINE_SUBSTITUTION --innodb-buffer-pool-size=2147483648 --innodb-flush-method=O_DIRECT --innodb-flush-log-at-trx-commit=2
+            --default-authentication-plugin=mysql_native_password --max_connections=1000 --explicit-defaults-for-timestamp=ON
+        environment:
+            - MYSQL_PORT=${DB_PORT}
+            - MYSQL_DATABASE=${DB_DATABASE}
+            - MYSQL_USER=${DB_USERNAME}
+            - MYSQL_PASSWORD=${DB_PASSWORD}
+            - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+        networks:
+            - laravel-network
+        volumes:
+            - "./data/replica/my.cnf:/etc/mysql/my.cnf"
+            - "./data/replica/start_replica.sh:/etc/mysql/start_replica.sh"
+            - "db-replica:/var/lib/mysql"
+        ports:
+            - "3307:3306"
 
-  laravel-app:
-    build:
-      context: '.'
-      args:
-        user: devuser
-        uid: ${UID}
-    container_name: laravel-app
-    working_dir: /var/www/
-    env_file:
-      - ./.env
-    volumes:
-      - ./:/var/www
-    networks:
-      - laravel-network
+    web-proxy:
+        image: nginx:alpine
+        container_name: web-proxy
+        depends_on:
+            - laravel-app
+        links:
+            - laravel-app
+        volumes:
+            - ./:/var/www
+            - ./nginx/conf.d/:/etc/nginx/conf.d/
+        networks:
+            - laravel-network
+        ports:
+            - "8000:80"
 
+    laravel-app:
+        build:
+            context: "."
+            args:
+                user: devuser
+                uid: ${UID}
+        container_name: laravel-app
+        working_dir: /var/www/
+        env_file:
+            - ./.env
+        volumes:
+            - ./:/var/www
+        networks:
+            - laravel-network
