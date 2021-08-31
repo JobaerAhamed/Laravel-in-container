@@ -1,24 +1,18 @@
 version: '3.5'
+networks:
+  laravel-network:
+    driver: bridge
+volumes:
+  db:
+    driver:
+      local
 
 services:
-  laravel-app:
-    build:
-      context: '.'
-      args:
-        uid: ${UID}
-    container_name: laravel-app
-    environment:
-      - APACHE_RUN_USER=#${UID}
-      - APACHE_RUN_GROUP=#${UID}
-    volumes:
-      - .:/var/www/html
-    ports:
-      - ${HOST_PORT}:80
-    networks:
-      - laravel-network
-
   mysql-db:
-    image: mysql:5.6
+    image: mysql:5.7.34
+    command: |
+      mysqld --sql-mode=NO_ENGINE_SUBSTITUTION --innodb-buffer-pool-size=2147483648 --innodb-flush-method=O_DIRECT --innodb-flush-log-at-trx-commit=2
+      --default-authentication-plugin=mysql_native_password --max_connections=1000 --explicit-defaults-for-timestamp=ON
     container_name: mysql-db
     environment:
       - MYSQL_ROOT_PASSWORD=root_pass
@@ -34,10 +28,33 @@ services:
     ports:
       - "3306:3306"
 
-networks:
-  laravel-network:
-    external: true
-volumes:
-  db:
-    driver:
-      local
+  web-proxy:
+    image: nginx:alpine
+    container_name: web-proxy
+    depends_on:
+      - laravel-app
+    links:
+      - laravel-app
+    volumes:
+      - ./:/var/www
+      - ./nginx/conf.d/:/etc/nginx/conf.d/
+    networks:
+      - laravel-network
+    ports:
+      - "8000:80"
+
+  laravel-app:
+    build:
+      context: '.'
+      args:
+        user: devuser
+        uid: ${UID}
+    container_name: laravel-app
+    working_dir: /var/www/
+    env_file:
+      - ./.env
+    volumes:
+      - ./:/var/www
+    networks:
+      - laravel-network
+
