@@ -1,5 +1,3 @@
-PORT = 8080
-
 default:
 	docker-compose up
 
@@ -8,6 +6,9 @@ build:
 	docker-compose up
 
 build-new:
+	docker-compose down | true
+	docker volume rm laravel-in-container_db | true
+	docker network rm laravel-network | true
 	docker network create laravel-network
 	docker-compose build --no-cache
 	docker-compose up
@@ -39,5 +40,5 @@ db:
 phpunit:
 	./scripts/./phpunit.sh $(c)
 
-openinbrowser:
-	sensible-browser http://127.0.0.1:$(PORT) &
+exec:
+	docker exec -it laravel-app bash -c "$(command)"

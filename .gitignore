@@ -8,6 +8,7 @@ Homestead.json
 Homestead.yaml
 npm-debug.log
 yarn-error.log
-package-lock.json
-composer.lock
+# package-lock.json
+# composer.lock
 run/var
+laravel
